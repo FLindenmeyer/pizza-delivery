@@ -1,13 +1,16 @@
 #!/bin/sh
 
-# Aguarda alguns segundos para garantir que o banco de dados está pronto
+# Aguarda o banco de dados estar pronto
 echo "Waiting for database to be ready..."
-sleep 5
-
-# Executa as migrações
-echo "Running database migrations..."
-npm run migrate:up
+for i in $(seq 1 30); do
+    if npm run migrate:up; then
+        echo "Database migrations completed successfully"
+        break
+    fi
+    echo "Migration attempt $i failed, waiting..."
+    sleep 2
+done
 
 # Inicia o servidor
 echo "Starting server..."
-npm start 
+exec npm start 
