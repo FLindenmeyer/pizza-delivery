@@ -1,11 +1,9 @@
 {
-  "defaultEnv": "local",
-  "local": {
+  "defaultEnv": "railway",
+  "railway": {
     "driver": "pg",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
-    "database": "pizza_delivery",
-    "port": 5432
+    "ssl": {
+      "rejectUnauthorized": false
+    }
   }
 } 
