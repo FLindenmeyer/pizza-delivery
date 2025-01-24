@@ -1,0 +1,75 @@
+.pizza-modal {
+  padding: 1.25rem;
+  max-width: 50rem;
+
+  .description {
+    color: #666;
+    margin-bottom: 0.625rem;
+  }
+
+  .base-price {
+    font-size: 1.2em;
+    color: #2196F3;
+    font-weight: bold;
+    margin-bottom: 1.25rem;
+  }
+
+  .flavors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15.625rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  mat-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-0.125rem);
+      box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+
+    mat-card-content {
+      padding: 0.625rem 0;
+    }
+  }
+
+  .flavor-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .quantity-section {
+    margin: 1.25rem 0;
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+
+      .quantity {
+        font-size: 1.2em;
+        min-width: 2.5rem;
+        text-align: center;
+      }
+    }
+  }
+
+  .total-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 0.0625rem solid #eee;
+
+    .total-price {
+      font-size: 1.5em;
+      color: #2196F3;
+      font-weight: bold;
+    }
+  }
+} 

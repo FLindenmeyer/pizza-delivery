@@ -1,0 +1,97 @@
+.order-details {
+  padding: 20px;
+}
+
+.detail-item {
+  margin-bottom: 16px;
+
+  strong {
+    color: #666;
+    margin-right: 8px;
+  }
+}
+
+.pizza-details {
+  margin-top: 8px;
+  padding-left: 16px;
+}
+
+.pizza-flavors {
+  margin-bottom: 8px;
+  
+  span {
+    font-size: 16px;
+  }
+}
+
+.pizza-info {
+  display: flex;
+  gap: 16px;
+  color: #666;
+  
+  p {
+    margin: 4px 0;
+  }
+}
+
+mat-dialog-content {
+  min-height: 200px;
+  max-height: 80vh;
+}
+
+mat-dialog-actions {
+  padding: 16px;
+}
+
+.pizzas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.pizza-item {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.pizza-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  
+  .pizza-size {
+    font-weight: 500;
+    font-size: 16px;
+  }
+  
+  .pizza-quantity {
+    background-color: #e0e0e0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+}
+
+.pizza-flavors {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flavor-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .flavor-name {
+    color: rgba(0, 0, 0, 0.87);
+  }
+  
+  .flavor-portion {
+    color: rgba(0, 0, 0, 0.54);
+    font-size: 14px;
+  }
+} 

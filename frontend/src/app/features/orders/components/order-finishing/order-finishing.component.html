@@ -1,0 +1,94 @@
+<div class="finishing-container">
+  <h2>Finalização de Pedidos</h2>
+
+  <div class="orders-section">
+    <div class="in-progress-section">
+      <h3>Pedidos em Andamento</h3>
+      <div class="orders-list">
+        <div *ngFor="let order of inProgressOrders; let first = first" 
+             class="order-card" 
+             [class.priority]="first">
+          <div class="order-header">
+            <h3>Pedido #{{order.id}}</h3>
+            <span class="order-time">{{order.orderDate | date:'HH:mm'}}</span>
+          </div>
+
+          <div class="pizzas-list">
+            <div *ngFor="let pizza of order.pizzas" class="pizza-item">
+              <div class="pizza-header">
+                <span class="pizza-size">Pizza {{pizza.size}}cm</span>
+                <span class="pizza-quantity">x{{pizza.quantity}}</span>
+              </div>
+              
+              <div class="pizza-flavors">
+                <ng-container *ngFor="let flavor of pizza.flavors">
+                  <div class="flavor-item">
+                    <span class="flavor-name">{{flavor.portion === 'half' ? '1/2 ' : ''}}{{flavor.name}}</span>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-actions">
+            <button mat-raised-button color="primary" 
+                    *ngIf="order.status === OrderStatus.ASSEMBLY_COMPLETED"
+                    [disabled]="!first"
+                    (click)="updateOrderStatus(order, OrderStatus.BAKING)">
+              Iniciar Preparo
+            </button>
+            <button mat-raised-button color="accent" 
+                    *ngIf="order.status === OrderStatus.BAKING"
+                    [disabled]="!first"
+                    (click)="updateOrderStatus(order, OrderStatus.READY)">
+              Finalizar Preparo
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="inProgressOrders.length === 0" class="no-orders">
+          <p>Não há pedidos em andamento no momento.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="completed-section">
+      <h3>Pedidos Finalizados Hoje</h3>
+      <div class="orders-list">
+        <div *ngFor="let order of completedOrders" 
+             class="order-card completed">
+          <div class="order-header">
+            <h3>Pedido #{{order.id}}</h3>
+            <span class="order-time">{{order.orderDate | date:'HH:mm'}}</span>
+          </div>
+
+          <div class="pizzas-list">
+            <div *ngFor="let pizza of order.pizzas" class="pizza-item">
+              <div class="pizza-header">
+                <span class="pizza-size">Pizza {{pizza.size}}cm</span>
+                <span class="pizza-quantity">x{{pizza.quantity}}</span>
+              </div>
+              
+              <div class="pizza-flavors">
+                <ng-container *ngFor="let flavor of pizza.flavors">
+                  <div class="flavor-item">
+                    <span class="flavor-name">{{flavor.portion === 'half' ? '1/2 ' : ''}}{{flavor.name}}</span>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <div class="completed-badge">
+            <mat-icon>check_circle</mat-icon>
+            <span>Finalizado</span>
+          </div>
+        </div>
+
+        <div *ngIf="completedOrders.length === 0" class="no-orders">
+          <p>Não há pedidos finalizados hoje.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

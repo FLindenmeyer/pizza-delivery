@@ -1,0 +1,97 @@
+<div class="today-orders">
+  <div class="header">
+    <h2>Pedidos de Hoje</h2>
+  </div>
+
+  <mat-form-field appearance="outline" class="filter-field">
+    <mat-label>Filtrar por Status</mat-label>
+    <mat-select (selectionChange)="filterByStatus($event.value)">
+      <mat-option [value]="">Todos</mat-option>
+      <mat-option *ngFor="let status of getOrderStatuses()" [value]="status">
+        <span class="status-badge" [class]="'status-' + status.toLowerCase()">●</span>
+        {{getStatusTranslation(status)}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="table-container mat-elevation-z8">
+    <table mat-table [dataSource]="dataSource">
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>Pedido</th>
+        <td mat-cell *matCellDef="let order">#{{order.id}}</td>
+      </ng-container>
+
+      <!-- Cliente Column -->
+      <ng-container matColumnDef="customer">
+        <th mat-header-cell *matHeaderCellDef>Cliente</th>
+        <td mat-cell *matCellDef="let order">{{order.customerName}}</td>
+      </ng-container>
+
+      <!-- Casa Column -->
+      <ng-container matColumnDef="house">
+        <th mat-header-cell *matHeaderCellDef>Casa</th>
+        <td mat-cell *matCellDef="let order">{{order.houseNumber}}</td>
+      </ng-container>
+
+      <!-- Horário Column -->
+      <ng-container matColumnDef="time">
+        <th mat-header-cell *matHeaderCellDef>Horário</th>
+        <td mat-cell *matCellDef="let order">{{order.orderDate | date:'HH:mm'}}</td>
+      </ng-container>
+
+      <!-- Telefone Column -->
+      <ng-container matColumnDef="phone">
+        <th mat-header-cell *matHeaderCellDef>Telefone</th>
+        <td mat-cell *matCellDef="let order">{{order.phone || '-'}}</td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let order">
+          <mat-form-field appearance="outline" class="status-select">
+            <mat-select [(value)]="order.status" (selectionChange)="updateOrderStatus(order, $event.value)">
+              <mat-option *ngFor="let status of getOrderStatuses()" [value]="status">
+                <span class="status-badge" [class]="'status-' + status.toLowerCase()">●</span>
+                {{getStatusTranslation(status)}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </td>
+      </ng-container>
+
+      <!-- Quantidade Column -->
+      <ng-container matColumnDef="quantity">
+        <th mat-header-cell *matHeaderCellDef>Qtd.</th>
+        <td mat-cell *matCellDef="let order">{{getTotalPizzas(order)}}</td>
+      </ng-container>
+
+      <!-- Total Column -->
+      <ng-container matColumnDef="total">
+        <th mat-header-cell *matHeaderCellDef>Total</th>
+        <td mat-cell *matCellDef="let order" class="total-column">{{getFormattedTotal(order.totalPrice)}}</td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let order">
+          <div class="actions-container">
+            <button mat-icon-button (click)="openOrderDetails(order)" matTooltip="Ver detalhes" color="primary">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteOrder(order)" matTooltip="Remover pedido">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+          [class.status-row]="true"
+          [class]="'status-' + row.status.toLowerCase()"></tr>
+    </table>
+  </div>
+</div> 

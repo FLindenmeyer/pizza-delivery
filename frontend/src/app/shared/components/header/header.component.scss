@@ -1,0 +1,19 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.divider {
+  height: 24px;
+  margin: 0 16px;
+  background-color: rgba(255, 255, 255, 0.3);
+} 

@@ -1,0 +1,69 @@
+<div class="pizza-modal">
+  <h2 mat-dialog-title>Pizza Grande - 35cm - 8 pedaços</h2>
+  <mat-dialog-content>
+    <p class="description">Monte sua pizza</p>
+    <p class="base-price">A partir de R$ {{PIZZA_BASE_PRICE.toFixed(2)}}</p>
+
+    <div class="flavors-section">
+      <h3>Sabores Disponíveis</h3>
+      <div class="flavors-grid">
+        <mat-card *ngFor="let flavor of availableFlavors">
+          <mat-card-header>
+            <mat-card-title>{{flavor.name}}</mat-card-title>
+            <mat-card-subtitle *ngIf="flavor.additionalPrice > 0">
+              + R$ {{flavor.additionalPrice.toFixed(2)}}
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{flavor.description}}</p>
+          </mat-card-content>
+          <mat-card-actions>
+            <div class="flavor-controls">
+              <button mat-icon-button type="button" 
+                      [disabled]="getFlavorCount(flavor.id) === 0"
+                      (click)="decreaseFlavorCount(flavor.id)">
+                <mat-icon>remove</mat-icon>
+              </button>
+              <span>{{getFlavorCount(flavor.id)}}/2</span>
+              <button mat-icon-button type="button"
+                      [disabled]="!canAddMoreFlavor(flavor.id)"
+                      (click)="increaseFlavorCount(flavor.id)">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+
+    <div class="quantity-section">
+      <h3>Quantidade de Pizzas</h3>
+      <div class="quantity-controls">
+        <button mat-icon-button type="button" 
+                [disabled]="quantity <= 1"
+                (click)="decreaseQuantity()">
+          <mat-icon>remove</mat-icon>
+        </button>
+        <span class="quantity">{{quantity}}</span>
+        <button mat-icon-button type="button" 
+                (click)="increaseQuantity()">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="total-section">
+      <h3>Total</h3>
+      <p class="total-price">R$ {{calculateTotal().toFixed(2)}}</p>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Cancelar</button>
+    <button mat-raised-button color="primary" 
+            [disabled]="!isSelectionValid()"
+            (click)="confirm()">
+      Adicionar ao Pedido
+    </button>
+  </mat-dialog-actions>
+</div> 

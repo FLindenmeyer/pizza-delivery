@@ -1,0 +1,48 @@
+<div class="assembly-container">
+  <h2>Montagem de Pedidos</h2>
+
+  <div class="orders-list">
+    <div *ngFor="let order of orders; let first = first" 
+         class="order-card" 
+         [class.priority]="first">
+      <div class="order-header">
+        <h3>Pedido #{{order.id}}</h3>
+        <span class="order-time">{{order.orderDate | date:'HH:mm'}}</span>
+      </div>
+
+      <div class="pizzas-list">
+        <div *ngFor="let pizza of order.pizzas" class="pizza-item">
+          <div class="pizza-header">
+            <span class="pizza-size">Pizza {{pizza.size}}cm</span>
+            <span class="pizza-quantity">x{{pizza.quantity}}</span>
+          </div>
+          
+          <div class="pizza-flavors">
+            <ng-container *ngFor="let flavor of pizza.flavors">
+              <div class="flavor-item">
+                <span class="flavor-name">{{flavor.portion === 'half' ? '1/2 ' : ''}}{{flavor.name}}</span>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-actions">
+        <button mat-raised-button color="primary" 
+                *ngIf="order.status === OrderStatus.PENDING"
+                (click)="updateOrderStatus(order, OrderStatus.ASSEMBLY)">
+          Iniciar Montagem
+        </button>
+        <button mat-raised-button color="accent" 
+                *ngIf="order.status === OrderStatus.ASSEMBLY"
+                (click)="updateOrderStatus(order, OrderStatus.ASSEMBLY_COMPLETED)">
+          Concluir Montagem
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="orders.length === 0" class="no-orders">
+      <p>Não há pedidos para montagem no momento.</p>
+    </div>
+  </div>
+</div> 

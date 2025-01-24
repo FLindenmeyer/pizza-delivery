@@ -1,0 +1,41 @@
+.order-list-container {
+  padding: 1.25rem;
+}
+
+.table-container {
+  margin: 20px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.mat-column-id {
+  width: 70px;
+}
+
+.mat-column-actions {
+  width: 48px;
+  text-align: center;
+}
+
+.mat-column-quantity {
+  width: 70px;
+  text-align: center;
+}
+
+.mat-column-total {
+  width: 120px;
+  text-align: right;
+  padding-right: 24px;
+}
+
+th.mat-header-cell {
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.mat-row:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+} 
