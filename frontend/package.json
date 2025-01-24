@@ -5,7 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "start:network": "ng serve --host 0.0.0.0 --disable-host-check --port 4200",
-    "build": "ng build",
+    "config": "node config.js",
+    "build": "npm run config && ng build",
+    "build:prod": "npm run config && ng build --configuration production",
     "watch": "ng build --watch --configuration development"
   },
   "private": true,

@@ -5,6 +5,10 @@ import { Server } from 'socket.io';
 import { OrderModel } from './models/order.model';
 import { AuthController } from './controllers/auth.controller';
 import { authMiddleware, AuthRequest } from './middlewares/auth.middleware';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
@@ -25,6 +29,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn(`Blocked request from unauthorized origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -199,20 +204,22 @@ app.delete('/api/orders/:id', authMiddleware, async (req: AuthRequest, res) => {
   }
 });
 
-// Rota de healthcheck
+// Basic health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Error handling middleware
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error('Erro não tratado:', err);
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled error:', err);
   res.status(500).json({
-    error: 'Erro interno do servidor',
-    details: err.message
+    error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message
   });
 });
 
+// Start server
 httpServer.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
 }); 
