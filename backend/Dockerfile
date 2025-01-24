@@ -1,41 +1,41 @@
-# Estágio de build
+# Build stage
 FROM node:18-alpine as builder
 
+# Define diretório de trabalho
 WORKDIR /app
 
-# Copia arquivos de configuração
+# Copia package.json e package-lock.json
 COPY package*.json ./
-COPY tsconfig.json ./
 
 # Instala dependências
-RUN npm ci
+RUN npm install
 
 # Copia código fonte
 COPY . .
 
-# Build da aplicação
+# Compila TypeScript
 RUN npm run build
 
-# Estágio de produção
+# Production stage
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Cria usuário não-root
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Copia build e dependências de produção
-COPY --from=builder /app/dist ./dist
+# Copia package.json e package-lock.json
 COPY package*.json ./
-RUN npm ci --only=production
 
-# Define usuário não-root
-USER appuser
+# Instala apenas dependências de produção
+RUN npm install --only=production
 
+# Copia build da stage anterior
+COPY --from=builder /app/dist ./dist
+
+# Copia arquivos de migração
+COPY migrations ./migrations
+COPY database.json ./
+
+# Expõe porta
 EXPOSE 3000
 
-# Adiciona healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:3000/health || exit 1
-
+# Comando para iniciar
 CMD ["npm", "start"] 
