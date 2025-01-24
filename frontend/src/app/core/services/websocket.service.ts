@@ -18,14 +18,12 @@ export class WebsocketService {
 
   private setupSocket() {
     const options = {
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       autoConnect: true,
-      forceNew: true,
-      path: '/socket.io'
+      forceNew: true
     };
 
-    const wsUrl = environment.apiUrl.replace('/api', '');
-    this.socket = io(wsUrl, options);
+    this.socket = io(environment.wsUrl, options);
 
     this.socket.on('connect', () => {
       console.log('WebSocket conectado');
@@ -33,6 +31,10 @@ export class WebsocketService {
 
     this.socket.on('connect_error', (error) => {
       console.error('Erro na conexão WebSocket:', error);
+      // Tentar reconectar após erro
+      setTimeout(() => {
+        this.socket.connect();
+      }, 1000);
     });
 
     this.socket.on('disconnect', (reason) => {
