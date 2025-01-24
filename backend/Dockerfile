@@ -38,6 +38,10 @@ COPY --from=builder /app/dist ./dist
 COPY migrations ./migrations
 COPY database.json ./
 
+# Instalar dependências incluindo os tipos necessários
+RUN npm install && \
+    npm install --save-dev @types/express @types/cors @types/node @types/socket.io
+
 # Expõe porta
 EXPOSE 3000
 
