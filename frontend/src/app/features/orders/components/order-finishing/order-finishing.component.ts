@@ -32,8 +32,14 @@ export class OrderFinishingComponent implements OnInit, OnDestroy {
   }
 
   private loadOrders(): void {
-    this.orderService.getTodayOrders().subscribe(orders => {
-      this.filterAndSortOrders(orders);
+    this.orderService.getTodayOrders().subscribe({
+      next: (orders) => {
+        this.filterAndSortOrders(orders);
+      },
+      error: (error) => {
+        console.error('Erro ao carregar pedidos:', error);
+        this.snackBar.open('Erro ao carregar pedidos', 'OK', { duration: 3000 });
+      }
     });
   }
 
@@ -51,6 +57,9 @@ export class OrderFinishingComponent implements OnInit, OnDestroy {
     this.completedOrders = sortedOrders.filter(order => 
       order.status === OrderStatus.READY
     );
+
+    console.log('Pedidos em andamento:', this.inProgressOrders);
+    console.log('Pedidos concluídos:', this.completedOrders);
   }
 
   isOldestOrder(order: Order): boolean {
@@ -59,23 +68,21 @@ export class OrderFinishingComponent implements OnInit, OnDestroy {
   }
 
   private setupWebSocketEvents(): void {
-    this.orderService.onOrderUpdated()
+    // Escuta por atualizações de status
+    this.websocketService.orderStatusUpdated$
       .pipe(takeUntil(this.destroy$))
       .subscribe(updatedOrder => {
-        console.debug('Pedido atualizado recebido no OrderFinishing:', updatedOrder);
-        
-        // Remove o pedido das duas listas
-        this.inProgressOrders = this.inProgressOrders.filter(o => o.id !== updatedOrder.id);
-        this.completedOrders = this.completedOrders.filter(o => o.id !== updatedOrder.id);
+        console.log('Status do pedido atualizado:', updatedOrder);
+        this.handleOrderUpdate(updatedOrder);
+      });
 
-        // Adiciona o pedido na lista apropriada
-        if (updatedOrder.status === OrderStatus.ASSEMBLY_COMPLETED || 
-            updatedOrder.status === OrderStatus.BAKING) {
-          this.inProgressOrders = [...this.inProgressOrders, updatedOrder].sort((a, b) => 
-            new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
-          );
-        } else if (updatedOrder.status === OrderStatus.READY) {
-          this.completedOrders = [...this.completedOrders, updatedOrder].sort((a, b) => 
+    // Escuta por novos pedidos
+    this.orderService.onOrderCreated()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(newOrder => {
+        console.log('Novo pedido recebido:', newOrder);
+        if (newOrder.status === OrderStatus.ASSEMBLY_COMPLETED) {
+          this.inProgressOrders = [...this.inProgressOrders, newOrder].sort((a, b) => 
             new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
           );
         }
@@ -85,26 +92,43 @@ export class OrderFinishingComponent implements OnInit, OnDestroy {
     this.orderService.onOrderDeleted()
       .pipe(takeUntil(this.destroy$))
       .subscribe(orderId => {
-        console.log('Pedido removido recebido:', orderId);
+        console.log('Pedido removido:', orderId);
         this.inProgressOrders = this.inProgressOrders.filter(o => o.id !== orderId);
         this.completedOrders = this.completedOrders.filter(o => o.id !== orderId);
       });
   }
+
+  private handleOrderUpdate(updatedOrder: Order): void {
+    // Remove o pedido das duas listas
+    this.inProgressOrders = this.inProgressOrders.filter(o => o.id !== updatedOrder.id);
+    this.completedOrders = this.completedOrders.filter(o => o.id !== updatedOrder.id);
+
+    // Adiciona o pedido na lista apropriada
+    if (updatedOrder.status === OrderStatus.ASSEMBLY_COMPLETED || 
+        updatedOrder.status === OrderStatus.BAKING) {
+      this.inProgressOrders = [...this.inProgressOrders, updatedOrder].sort((a, b) => 
+        new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+      );
+    } else if (updatedOrder.status === OrderStatus.READY) {
+      this.completedOrders = [...this.completedOrders, updatedOrder].sort((a, b) => 
+        new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+      );
+    }
+  }
   
   updateOrderStatus(order: Order, newStatus: OrderStatus): void {
+    console.log('Atualizando status do pedido:', { orderId: order.id, oldStatus: order.status, newStatus });
+    
     this.orderService.updateOrderStatus(order.id!, newStatus).subscribe({
       next: (updatedOrder) => {
-        this.websocketService.emitOrderStatusUpdate(updatedOrder);
+        console.log('Status atualizado com sucesso:', updatedOrder);
+        this.handleOrderUpdate(updatedOrder);
         this.snackBar.open('Status atualizado com sucesso!', 'OK', { duration: 3000 });
       },
-      error: () => {
+      error: (error) => {
+        console.error('Erro ao atualizar status:', error);
         this.snackBar.open('Erro ao atualizar status', 'OK', { duration: 3000 });
       }
     });
-  }
-
-  changeOrderStatus(order: any, newStatus: string) {
-    order.status = newStatus;
-    this.websocketService.emitOrderStatusUpdate(order); // Emite a atualização
   }
 } 

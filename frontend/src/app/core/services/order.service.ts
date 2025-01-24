@@ -38,10 +38,12 @@ export class OrderService {
   }
 
   updateOrderStatus(orderId: string, status: OrderStatus): Observable<Order> {
+    console.log('Atualizando status do pedido:', { orderId, status });
     return this.http.patch<Order>(`${this.apiUrl}/${orderId}/status`, { status }).pipe(
       tap(updatedOrder => {
-        console.log('Status atualizado, emitindo evento...');
-        this.websocket.emitOrderUpdated(updatedOrder);
+        console.log('Status atualizado no backend, emitindo evento...');
+        // Emitir tanto atualização geral quanto específica de status
+        this.websocket.emitOrderStatusUpdate(updatedOrder);
       })
     );
   }
@@ -75,5 +77,9 @@ export class OrderService {
 
   onOrderDeleted(): Observable<string> {
     return this.websocket.onOrderDeleted();
+  }
+
+  onOrderStatusUpdated(): Observable<Order> {
+    return this.websocket.orderStatusUpdated$;
   }
 } 

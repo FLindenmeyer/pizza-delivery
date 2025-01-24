@@ -14,4 +14,4 @@ export interface PizzaFlavor {
   portion: 'whole' | 'half';
 }
 
-export const PIZZA_BASE_PRICE = 62.99; 
+export const PIZZA_BASE_PRICE = 70.00; 

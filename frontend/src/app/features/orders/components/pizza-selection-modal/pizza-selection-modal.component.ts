@@ -16,23 +16,51 @@ export class PizzaSelectionModalComponent {
   readonly availableFlavors: PizzaFlavor[] = [
     {
       id: 1,
-      name: 'Mozarela',
-      description: 'Queijo mozarela, molho de tomate e orégano',
+      name: 'Portuguesa',
+      description: 'Molho, mussarela, presunto, ovo, cebola, pimentão verde e orégano',
       additionalPrice: 0,
       portion: 'whole'
     },
     {
       id: 2,
       name: 'Calabresa',
-      description: 'Calabresa fatiada, cebola e orégano',
+      description: 'Molho, mussarela, calabresa, cebola, cream cheese philadelphia e orégano',
       additionalPrice: 0,
       portion: 'whole'
     },
     {
       id: 3,
-      name: 'Portuguesa',
-      description: 'Presunto, ovos, cebola, ervilha, queijo e orégano',
-      additionalPrice: 3,
+      name: 'Frango tradicional',
+      description: 'Molho, mussarela, frango com tempero da casa, milho, cream cheese philadelphia e orégano',
+      additionalPrice: 0,
+      portion: 'whole'
+    },
+    {
+      id: 4,
+      name: 'Frango defumado',
+      description: 'Molho, mussarela, frango defumado DORGAN, tomate cereja, cream cheese philadelphia e orégano',
+      additionalPrice: 0,
+      portion: 'whole'
+    },
+    {
+      id: 5,
+      name: 'Marguerita',
+      description: 'Molho, mussarela, tomate, manjericão, raspas de queijo parmesão faixa azul e orégano',
+      additionalPrice: 0,
+      portion: 'whole'
+    },
+    {
+      id: 6,
+      name: 'Carne de Sol/Sertaneja',
+      description: 'Molho, mussarela, carne de sol, cebola roxa, cream cheese philadelphia, queijo coalho em cubos e orégano',
+      additionalPrice: 0,
+      portion: 'whole'
+    },
+    {
+      id: 7,
+      name: 'Bacon e Milho',
+      description: 'Molho, mussarela, bacon DORGAN, milho verde, cream cheese philadelphia e orégano',
+      additionalPrice: 0,
       portion: 'whole'
     }
   ];

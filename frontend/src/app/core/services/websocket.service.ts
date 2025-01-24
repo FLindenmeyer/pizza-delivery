@@ -9,8 +9,11 @@ import { Order } from '@core/models';
 })
 export class WebsocketService {
   private socket!: Socket;
-  private orderStatusUpdatedSource = new Subject<any>();
+  private orderStatusUpdatedSource = new Subject<Order>();
+  private orderCreatedSource = new Subject<Order>();
+  
   orderStatusUpdated$ = this.orderStatusUpdatedSource.asObservable();
+  orderCreated$ = this.orderCreatedSource.asObservable();
 
   constructor() {
     this.setupSocket();
@@ -31,7 +34,6 @@ export class WebsocketService {
 
     this.socket.on('connect_error', (error) => {
       console.error('Erro na conexão WebSocket:', error);
-      // Tentar reconectar após erro
       setTimeout(() => {
         this.socket.connect();
       }, 1000);
@@ -40,9 +42,26 @@ export class WebsocketService {
     this.socket.on('disconnect', (reason) => {
       console.log('WebSocket desconectado:', reason);
       if (reason === 'io server disconnect') {
-        // Reconecta se a desconexão foi iniciada pelo servidor
         this.socket.connect();
       }
+    });
+
+    // Configurar listener para atualizações de status
+    this.socket.on('orderStatusUpdated', (order: Order) => {
+      console.log('Status do pedido atualizado via WebSocket:', order);
+      this.orderStatusUpdatedSource.next(order);
+    });
+
+    // Configurar listener para atualizações gerais
+    this.socket.on('orderUpdated', (order: Order) => {
+      console.log('Pedido atualizado via WebSocket:', order);
+      this.orderStatusUpdatedSource.next(order);
+    });
+
+    // Configurar listener para novos pedidos
+    this.socket.on('orderCreated', (order: Order) => {
+      console.log('Novo pedido recebido via WebSocket:', order);
+      this.orderCreatedSource.next(order);
     });
   }
 
@@ -59,22 +78,27 @@ export class WebsocketService {
   }
 
   emitOrderUpdated(order: Order): void {
+    console.log('Emitindo atualização de pedido:', order);
     this.socket.emit('orderUpdated', order);
+    this.orderStatusUpdatedSource.next(order);
   }
 
   onOrderUpdated(): Observable<Order> {
-    return fromEvent(this.socket, 'orderUpdated');
+    return this.orderStatusUpdated$;
   }
 
   emitOrderCreated(order: Order): void {
+    console.log('Emitindo novo pedido:', order);
     this.socket.emit('orderCreated', order);
+    this.orderCreatedSource.next(order);
   }
 
   onOrderCreated(): Observable<Order> {
-    return fromEvent(this.socket, 'orderCreated');
+    return this.orderCreated$;
   }
 
   emitOrderDeleted(orderId: string): void {
+    console.log('Emitindo exclusão de pedido:', orderId);
     this.socket.emit('orderDeleted', orderId);
   }
 
@@ -83,6 +107,7 @@ export class WebsocketService {
   }
 
   emitOrderStatusUpdate(order: Order): void {
+    console.log('Emitindo atualização de status:', order);
     this.socket.emit('orderStatusUpdated', order);
     this.orderStatusUpdatedSource.next(order);
   }
