@@ -16,7 +16,8 @@ const httpServer = createServer(app);
 // Configuração do CORS
 const allowedOrigins = [
   'http://localhost:4200',
-  'http://127.0.0.1:4200'
+  'http://127.0.0.1:4200',
+  'https://pizza-delivery-web-vmwg.onrender.com'  // URL correta do frontend no Render
 ];
 
 // Adiciona a URL do frontend em produção se existir
