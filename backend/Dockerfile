@@ -1,26 +1,3 @@
-# Build stage
-FROM node:18-alpine as builder
-
-# Increase Node.js memory limit
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-
-# Define diretório de trabalho
-WORKDIR /app
-
-# Copia package.json e package-lock.json
-COPY package*.json ./
-
-# Instala dependências com flags específicas
-RUN npm ci --only=production && \
-    npm ci
-
-# Copia código fonte
-COPY . .
-
-# Compila TypeScript
-RUN npm run build
-
-# Production stage
 FROM node:18-alpine
 
 WORKDIR /app
@@ -28,7 +5,7 @@ WORKDIR /app
 # Copia package.json e package-lock.json
 COPY package*.json ./
 
-# Instala todas as dependências
+# Instala dependências incluindo devDependencies para build
 RUN npm install
 
 # Copia o resto dos arquivos
@@ -36,6 +13,9 @@ COPY . .
 
 # Compila TypeScript
 RUN npm run build
+
+# Remove devDependencies
+RUN npm prune --production
 
 # Expõe a porta
 EXPOSE 3000
