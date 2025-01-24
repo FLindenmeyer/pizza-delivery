@@ -6,6 +6,6 @@ export interface Environment {
 
 export const environment: Environment = {
   production: true,
-  apiUrl: '/api',  // This will be replaced by Netlify's URL rewrite
-  wsUrl: '' // This will be set during build time
+  apiUrl: 'https://pizza-delivery-api-yhro.onrender.com',  // URL correta do backend no Render
+  wsUrl: 'wss://pizza-delivery-api-yhro.onrender.com' // URL correta do WebSocket
 }; 
