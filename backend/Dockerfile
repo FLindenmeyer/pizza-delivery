@@ -5,8 +5,8 @@ WORKDIR /app
 # Copia package.json e package-lock.json
 COPY package*.json ./
 
-# Instala dependências incluindo devDependencies para build
-RUN npm ci
+# Instala dependências sem executar scripts
+RUN npm ci --ignore-scripts
 
 # Copia o resto dos arquivos
 COPY . .
