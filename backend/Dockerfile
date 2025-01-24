@@ -1,14 +1,18 @@
 # Build stage
 FROM node:18-alpine as builder
 
+# Increase Node.js memory limit
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 # Define diretório de trabalho
 WORKDIR /app
 
 # Copia package.json e package-lock.json
 COPY package*.json ./
 
-# Instala dependências
-RUN npm install
+# Instala dependências com flags específicas
+RUN npm ci --only=production && \
+    npm ci
 
 # Copia código fonte
 COPY . .
@@ -24,8 +28,8 @@ WORKDIR /app
 # Copia package.json e package-lock.json
 COPY package*.json ./
 
-# Instala apenas dependências de produção
-RUN npm install --only=production
+# Instala apenas dependências de produção com flags específicas
+RUN npm ci --only=production --ignore-scripts
 
 # Copia build da stage anterior
 COPY --from=builder /app/dist ./dist
