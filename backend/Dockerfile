@@ -28,21 +28,16 @@ WORKDIR /app
 # Copia package.json e package-lock.json
 COPY package*.json ./
 
-# Instala apenas dependências de produção com flags específicas
-RUN npm ci --only=production --ignore-scripts
+# Instala todas as dependências
+RUN npm install
 
-# Copia build da stage anterior
-COPY --from=builder /app/dist ./dist
+# Copia o resto dos arquivos
+COPY . .
 
-# Copia arquivos de migração
-COPY migrations ./migrations
-COPY database.json ./
+# Compila TypeScript
+RUN npm run build
 
-# Instalar dependências incluindo os tipos necessários
-RUN npm install && \
-    npm install --save-dev @types/express @types/cors @types/node @types/socket.io
-
-# Expõe porta
+# Expõe a porta
 EXPOSE 3000
 
 # Comando para iniciar
