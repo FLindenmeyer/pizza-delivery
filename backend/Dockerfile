@@ -20,5 +20,9 @@ RUN npm prune --production
 # Expõe a porta
 EXPOSE 3000
 
+# Script para executar migrações e iniciar o servidor
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Comando para iniciar
-CMD ["npm", "start"] 
+ENTRYPOINT ["docker-entrypoint.sh"] 
