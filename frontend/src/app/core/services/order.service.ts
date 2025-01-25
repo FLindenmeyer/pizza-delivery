@@ -13,7 +13,7 @@ import { WebsocketService } from './websocket.service';
 export class OrderService {
   private readonly http = inject(HttpClient);
   private readonly websocket = inject(WebsocketService);
-  private readonly apiUrl = `${environment.apiUrl}/orders`;
+  private readonly apiUrl = `${environment.apiUrl}/api/orders`;
 
   getTodayOrders(): Observable<Order[]> {
     return this.http.get<Order[]>(`${this.apiUrl}/today`);
