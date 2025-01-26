@@ -143,6 +143,7 @@ io.on('connection', (socket) => {
 // Auth routes
 const authController = new AuthController();
 app.post('/api/login', (req, res) => authController.login(req, res));
+app.post('/login', (req, res) => authController.login(req, res));
 
 // Protected routes
 app.post('/api/orders', authMiddleware, async (req: AuthRequest, res) => {
