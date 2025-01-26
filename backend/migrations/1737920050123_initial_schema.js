@@ -51,21 +51,15 @@ exports.up = pgm => {
   pgm.createIndex('order_pizzas', 'order_id');
 
   // Create updated_at trigger function
-  pgm.createFunction(
-    'update_updated_at_column',
-    [],
-    {
-      replace: true,
-      language: 'plpgsql',
-      returns: 'trigger',
-      body: `
-        BEGIN
-          NEW.updated_at = CURRENT_TIMESTAMP;
-          RETURN NEW;
-        END;
-      `
-    }
-  );
+  pgm.sql(`
+    CREATE OR REPLACE FUNCTION update_updated_at_column()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      NEW.updated_at = CURRENT_TIMESTAMP;
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+  `);
 
   // Create trigger
   pgm.createTrigger(
