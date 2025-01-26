@@ -8,8 +8,9 @@ export interface Order {
   phone?: string;
   pizzas: Pizza[];
   status: OrderStatus;
-  orderDate: Date;
-  deliveryTime: string;
+  preparationTime?: string;
   isScheduled: boolean;
   totalPrice: number;
+  createdAt: Date;
+  updatedAt: Date;
 } 

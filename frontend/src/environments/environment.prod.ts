@@ -6,6 +6,6 @@ export interface Environment {
 
 export const environment: Environment = {
   production: true,
-  apiUrl: 'https://pizza-delivery-api-yhro.onrender.com',  // URL correta do backend no Render
-  wsUrl: 'wss://pizza-delivery-api-yhro.onrender.com' // URL correta do WebSocket
+  apiUrl: 'https://pizza-delivery-api-yhro.onrender.com/api',  // Já inclui o prefixo /api
+  wsUrl: 'wss://pizza-delivery-api-yhro.onrender.com'  // Websocket usa a raiz
 }; 

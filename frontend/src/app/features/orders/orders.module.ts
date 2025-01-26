@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { SharedModule } from '../../shared/shared.module';
 import { MaterialModule } from '../../shared/material.module';
 import { OrdersRoutingModule } from './orders-routing.module';
@@ -28,6 +28,7 @@ import { PizzaSelectionModalComponent } from './components/pizza-selection-modal
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    FormsModule,
     SharedModule,
     MaterialModule,
     OrdersRoutingModule

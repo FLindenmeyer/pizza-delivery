@@ -24,25 +24,47 @@ export class NewOrderComponent {
     houseNumber: ['', Validators.required],
     phone: [''],
     isScheduled: [false],
-    deliveryTime: ['']
+    preparationTime: ['']
   });
 
   selectedPizzas: Pizza[] = [];
+  minDeliveryTime: string = '';
 
   constructor() {
     this.setupFormValidation();
+    this.updateMinDeliveryTime();
+  }
+
+  private updateMinDeliveryTime(): void {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    this.minDeliveryTime = `${hours}:${minutes}`;
   }
 
   private setupFormValidation(): void {
     this.orderForm.get('isScheduled')?.valueChanges.subscribe(isScheduled => {
-      const timeControl = this.orderForm.get('deliveryTime');
+      const prepTimeControl = this.orderForm.get('preparationTime');
+      
       if (isScheduled) {
-        timeControl?.setValidators(Validators.required);
+        prepTimeControl?.setValidators([
+          Validators.required,
+          (control) => {
+            if (!control.value) return null;
+            const [hours, minutes] = control.value.split(':').map(Number);
+            const selectedTime = new Date();
+            selectedTime.setHours(hours, minutes, 0);
+            
+            const now = new Date();
+            return selectedTime > now ? null : { min: true };
+          }
+        ]);
       } else {
-        timeControl?.clearValidators();
-        timeControl?.setValue('');
+        prepTimeControl?.clearValidators();
+        prepTimeControl?.setValue('');
       }
-      timeControl?.updateValueAndValidity();
+      
+      prepTimeControl?.updateValueAndValidity();
     });
   }
 
@@ -53,8 +75,8 @@ export class NewOrderComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.selectedPizzas.push(result);
+      if (result && Array.isArray(result)) {
+        this.selectedPizzas = [...this.selectedPizzas, ...result];
       }
     });
   }
@@ -65,13 +87,15 @@ export class NewOrderComponent {
 
   formatPizzaFlavors(pizza: Pizza): string {
     return pizza.flavors
-      .map(f => `${f.portion === 'whole' ? 'Inteira' : '1/2'} ${f.name}`)
+      .map(f => `${f.portion === 'whole' ? 'Inteira' : 'Meia'} ${f.name}`)
       .join(' + ');
   }
 
   calculateTotal(): number {
     return this.selectedPizzas.reduce((total, pizza) => {
-      return total + (70 * pizza.quantity);
+      const pizzaPrice = pizza.flavors.reduce((flavorTotal, flavor) => 
+        flavorTotal + (flavor.additionalPrice * (flavor.portion === 'whole' ? 2 : 1)), 70);
+      return total + (pizzaPrice * pizza.quantity);
     }, 0);
   }
 
@@ -81,11 +105,15 @@ export class NewOrderComponent {
 
   finishOrder(): void {
     if (this.isOrderValid()) {
-      const order: Omit<Order, 'id'> = {
-        ...this.orderForm.value,
+      const formValues = this.orderForm.value;
+      const order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'> = {
+        customerName: formValues.customerName,
+        houseNumber: formValues.houseNumber,
+        phone: formValues.phone || '',
         pizzas: this.selectedPizzas,
         status: OrderStatus.PENDING,
-        orderDate: new Date(),
+        isScheduled: formValues.isScheduled,
+        preparationTime: formValues.isScheduled ? formValues.preparationTime : '',
         totalPrice: this.calculateTotal()
       };
 

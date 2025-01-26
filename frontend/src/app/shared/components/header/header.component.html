@@ -1,23 +1,79 @@
-<mat-toolbar color="primary">
-  <span>Pizza Delivery</span>
-  <span class="spacer"></span>
-  <nav>
-    <a mat-button routerLink="/orders" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-      Pedidos de Hoje
-    </a>
-    <a mat-button routerLink="/orders/assembly" routerLinkActive="active">
-      Montagem
-    </a>
-    <a mat-button routerLink="/orders/finishing" routerLinkActive="active">
-      Finalização
-    </a>
-    <button mat-raised-button color="accent" (click)="onNewOrder()">
-      <mat-icon>add</mat-icon>
-      Novo Pedido
+<!-- Mobile View -->
+<mat-sidenav-container class="sidenav-container" *ngIf="isMobile" [class.mat-drawer-container-has-open]="isOpen">
+  <mat-sidenav #sidenav mode="over" class="mobile-menu" (afterClose)="isOpen = false">
+    <div class="mobile-menu-header">
+      <h3>Pizza Delivery</h3>
+      <button mat-icon-button (click)="closeSidenav()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <mat-nav-list>
+      <a mat-list-item routerLink="/orders" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeSidenav()">
+        <mat-icon>list_alt</mat-icon>
+        <span>Pedidos de Hoje</span>
+      </a>
+      <a mat-list-item routerLink="/orders/assembly" routerLinkActive="active" (click)="closeSidenav()">
+        <mat-icon>local_pizza</mat-icon>
+        <span>Montagem</span>
+      </a>
+      <a mat-list-item routerLink="/orders/finishing" routerLinkActive="active" (click)="closeSidenav()">
+        <mat-icon>restaurant</mat-icon>
+        <span>Finalização</span>
+      </a>
+      <mat-divider></mat-divider>
+      <a mat-list-item (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+        <span>Sair</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="mobile-toolbar">
+      <button mat-icon-button (click)="openSidenav()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Pizza Delivery</span>
+      <span class="spacer"></span>
+      <button mat-icon-button [matMenuTriggerFor]="mobileMenu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    </mat-toolbar>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+<!-- Desktop View -->
+<div class="desktop-header" *ngIf="!isMobile">
+  <mat-toolbar color="primary" class="desktop-toolbar">
+    <span>Pizza Delivery</span>
+    <span class="spacer"></span>
+    <nav>
+      <a mat-button routerLink="/orders" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        Pedidos de Hoje
+      </a>
+      <a mat-button routerLink="/orders/assembly" routerLinkActive="active">
+        Montagem
+      </a>
+      <a mat-button routerLink="/orders/finishing" routerLinkActive="active">
+        Finalização
+      </a>
+      <button mat-raised-button color="accent" (click)="onNewOrder()">
+        <mat-icon>add</mat-icon>
+        Novo Pedido
+      </button>
+    </nav>
+    <mat-divider [vertical]="true" class="divider"></mat-divider>
+    <button mat-icon-button color="warn" (click)="onLogout()" matTooltip="Sair">
+      <mat-icon>logout</mat-icon>
     </button>
-  </nav>
-  <mat-divider [vertical]="true" class="divider"></mat-divider>
-  <button mat-icon-button color="warn" (click)="onLogout()" matTooltip="Sair">
-    <mat-icon>logout</mat-icon>
+  </mat-toolbar>
+</div>
+
+<!-- Mobile Menu -->
+<mat-menu #mobileMenu="matMenu">
+  <button mat-menu-item (click)="onNewOrder()">
+    <mat-icon>add</mat-icon>
+    <span>Novo Pedido</span>
   </button>
-</mat-toolbar> 
+</mat-menu> 

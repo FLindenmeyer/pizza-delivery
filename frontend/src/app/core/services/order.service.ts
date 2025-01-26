@@ -13,14 +13,19 @@ import { WebsocketService } from './websocket.service';
 export class OrderService {
   private readonly http = inject(HttpClient);
   private readonly websocket = inject(WebsocketService);
-  private readonly apiUrl = `${environment.apiUrl}/api/orders`;
+  private readonly baseUrl = environment.apiUrl;
+
+  private getUrl(path: string): string {
+    const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+    return `${this.baseUrl}/${normalizedPath}`;
+  }
 
   getTodayOrders(): Observable<Order[]> {
-    return this.http.get<Order[]>(`${this.apiUrl}/today`);
+    return this.http.get<Order[]>(this.getUrl('/orders/today'));
   }
 
   getAssemblyOrders(): Observable<Order[]> {
-    return this.http.get<Order[]>(`${this.apiUrl}/today`).pipe(
+    return this.http.get<Order[]>(this.getUrl('/orders/today')).pipe(
       map(orders => orders.filter(order => 
         order.status === OrderStatus.PENDING || 
         order.status === OrderStatus.ASSEMBLY
@@ -28,28 +33,27 @@ export class OrderService {
     );
   }
 
-  createOrder(order: Omit<Order, 'id'>): Observable<Order> {
-    return this.http.post<Order>(this.apiUrl, order).pipe(
-      tap(createdOrder => {
+  createOrder(order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Observable<Order> {
+    return this.http.post<Order>(this.getUrl('/orders'), order).pipe(
+      tap(newOrder => {
         console.log('Pedido criado, emitindo evento...');
-        this.websocket.emitOrderCreated(createdOrder);
+        this.websocket.emitOrderCreated(newOrder);
       })
     );
   }
 
   updateOrderStatus(orderId: string, status: OrderStatus): Observable<Order> {
     console.log('Atualizando status do pedido:', { orderId, status });
-    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/status`, { status }).pipe(
+    return this.http.patch<Order>(this.getUrl(`/orders/${orderId}/status`), { status }).pipe(
       tap(updatedOrder => {
         console.log('Status atualizado no backend, emitindo evento...');
-        // Emitir tanto atualização geral quanto específica de status
         this.websocket.emitOrderStatusUpdate(updatedOrder);
       })
     );
   }
 
   getOrderById(id: number): Observable<Order> {
-    return this.http.get<Order>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<Order>(this.getUrl(`/orders/${id}`)).pipe(
       map(order => ({
         ...order,
         pizzas: order.pizzas || []
@@ -58,7 +62,7 @@ export class OrderService {
   }
 
   deleteOrder(orderId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${orderId}`).pipe(
+    return this.http.delete<void>(this.getUrl(`/orders/${orderId}`)).pipe(
       tap(() => {
         console.log('Pedido removido, emitindo evento...');
         this.websocket.emitOrderDeleted(orderId);
@@ -81,5 +85,13 @@ export class OrderService {
 
   onOrderStatusUpdated(): Observable<Order> {
     return this.websocket.orderStatusUpdated$;
+  }
+
+  getOrders(startDate?: Date, endDate?: Date): Observable<Order[]> {
+    let url = this.getUrl('/orders');
+    if (startDate && endDate) {
+      url += `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
+    }
+    return this.http.get<Order[]>(url);
   }
 } 

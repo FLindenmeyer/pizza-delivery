@@ -23,44 +23,45 @@
       </mat-form-field>
     </div>
 
-    <div class="pizzas-section">
-      <h3>Pizzas do Pedido</h3>
-      
-      <div class="pizzas-list" *ngIf="selectedPizzas.length > 0">
-        <mat-card *ngFor="let pizza of selectedPizzas; let i = index" class="pizza-item">
-          <mat-card-content>
-            <div class="pizza-info">
-              <span class="pizza-flavors">
-                {{ formatPizzaFlavors(pizza) }}
-              </span>
-              <span class="pizza-quantity">
-                Quantidade: {{ pizza.quantity }}
-              </span>
-            </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-icon-button color="warn" (click)="removePizza(i)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </mat-card-actions>
-        </mat-card>
+    <div class="agendamento-section">
+      <h2>Agendamento do Pedido</h2>
+      <div class="agendamento-toggle">
+        <mat-slide-toggle [formControlName]="'isScheduled'">
+          Agendar horário específico para preparo
+        </mat-slide-toggle>
       </div>
 
+      <div class="agendamento-times" *ngIf="orderForm.get('isScheduled')?.value">
+        <mat-form-field>
+          <mat-label>Horário de Preparo</mat-label>
+          <input matInput type="time" [formControlName]="'preparationTime'" [min]="minDeliveryTime">
+          <mat-error *ngIf="orderForm.get('preparationTime')?.hasError('required')">
+            Horário de preparo é obrigatório
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="pizzas-section">
+      <h2>Pizzas do Pedido</h2>
       <button mat-raised-button color="primary" (click)="openPizzaSelection()">
         <mat-icon>add</mat-icon>
         Adicionar Pizza
       </button>
-    </div>
 
-    <div class="delivery-section">
-      <h3>Entrega</h3>
-      <mat-checkbox formControlName="isScheduled">Agendar horário de entrega?</mat-checkbox>
-
-      <mat-form-field *ngIf="orderForm.get('isScheduled')?.value">
-        <input matInput type="time" placeholder="Horário de Entrega" 
-               formControlName="deliveryTime">
-        <mat-hint>Formato: HH:mm (24h)</mat-hint>
-      </mat-form-field>
+      <div class="pizzas-list">
+        <mat-card *ngFor="let pizza of selectedPizzas; let i = index">
+          <mat-card-content>
+            <div class="pizza-info">
+              <span class="pizza-flavor">{{formatPizzaFlavors(pizza)}}</span>
+              <span class="pizza-quantity">Quantidade: {{pizza.quantity}}</span>
+            </div>
+            <button mat-icon-button color="warn" (click)="removePizza(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </div>
     </div>
 
     <div class="total-section" *ngIf="selectedPizzas.length > 0">
@@ -69,7 +70,7 @@
     </div>
 
     <div class="actions">
-      <button mat-button (click)="cancel()">Cancelar</button>
+      <button mat-stroked-button (click)="cancel()">Cancelar</button>
       <button mat-raised-button color="primary" 
               [disabled]="!isOrderValid()"
               (click)="finishOrder()">

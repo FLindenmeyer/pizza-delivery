@@ -1,69 +1,123 @@
 <div class="pizza-modal">
-  <h2 mat-dialog-title>Pizza Grande - 35cm - 8 pedaços</h2>
-  <mat-dialog-content>
-    <p class="description">Monte sua pizza</p>
-    <p class="base-price">A partir de R$ {{PIZZA_BASE_PRICE.toFixed(2)}}</p>
+  <div class="modal-header">
+    <h2 mat-dialog-title>Monte sua Pizza</h2>
+  </div>
 
-    <div class="flavors-section">
-      <h3>Sabores Disponíveis</h3>
-      <div class="flavors-grid">
-        <mat-card *ngFor="let flavor of availableFlavors">
-          <mat-card-header>
-            <mat-card-title>{{flavor.name}}</mat-card-title>
-            <mat-card-subtitle *ngIf="flavor.additionalPrice > 0">
-              + R$ {{flavor.additionalPrice.toFixed(2)}}
-            </mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <p>{{flavor.description}}</p>
-          </mat-card-content>
-          <mat-card-actions>
-            <div class="flavor-controls">
-              <button mat-icon-button type="button" 
-                      [disabled]="getFlavorCount(flavor.id) === 0"
-                      (click)="decreaseFlavorCount(flavor.id)">
+  <mat-dialog-content class="modal-content">
+    <div class="content-wrapper">
+      <!-- Painel Esquerdo: Seleção de Sabores -->
+      <div class="flavors-section">
+        <div class="flavors-grid">
+          <mat-card *ngFor="let flavor of availableFlavors" 
+                    [class.selected]="getFlavorCount(flavor.id) > 0"
+                    [class.disabled]="!canAddMoreFlavor(flavor.id) && getFlavorCount(flavor.id) === 0">
+            <div class="flavor-content" (click)="toggleFlavor(flavor.id)">
+              <div class="flavor-header">
+                <h3>{{flavor.name}}</h3>
+                <span *ngIf="flavor.additionalPrice > 0" class="additional-price">
+                  +R$ {{flavor.additionalPrice.toFixed(2)}}
+                </span>
+              </div>
+              <p class="flavor-description">{{flavor.description}}</p>
+              <div class="portion-indicator" *ngIf="getFlavorCount(flavor.id) > 0">
+                {{getFlavorCount(flavor.id) === 2 ? 'Pizza Inteira' : 'Meia Pizza'}}
+              </div>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+
+      <!-- Painel Direito: Resumo e Controles -->
+      <div class="order-summary">
+        <div class="order-summary-content">
+          <div class="selected-flavors">
+            <h3>Sabores Selecionados</h3>
+            <div class="flavor-chips">
+              <mat-chip-set>
+                <mat-chip *ngFor="let flavor of getSelectedFlavors()" 
+                         [removable]="true" 
+                         (removed)="clearFlavor(flavor.id)">
+                  {{flavor.name}}
+                  <mat-icon matChipRemove>cancel</mat-icon>
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+          </div>
+
+          <div class="quantity-section">
+            <h3>Quantidade</h3>
+            <div class="quantity-controls">
+              <button mat-mini-fab color="primary" 
+                      [disabled]="quantity <= 1"
+                      (click)="decreaseQuantity()">
                 <mat-icon>remove</mat-icon>
               </button>
-              <span>{{getFlavorCount(flavor.id)}}/2</span>
-              <button mat-icon-button type="button"
-                      [disabled]="!canAddMoreFlavor(flavor.id)"
-                      (click)="increaseFlavorCount(flavor.id)">
+              <span class="quantity">{{quantity}}</span>
+              <button mat-mini-fab color="primary" 
+                      (click)="increaseQuantity()">
                 <mat-icon>add</mat-icon>
               </button>
             </div>
-          </mat-card-actions>
-        </mat-card>
-      </div>
-    </div>
+          </div>
 
-    <div class="quantity-section">
-      <h3>Quantidade de Pizzas</h3>
-      <div class="quantity-controls">
-        <button mat-icon-button type="button" 
-                [disabled]="quantity <= 1"
-                (click)="decreaseQuantity()">
-          <mat-icon>remove</mat-icon>
-        </button>
-        <span class="quantity">{{quantity}}</span>
-        <button mat-icon-button type="button" 
-                (click)="increaseQuantity()">
-          <mat-icon>add</mat-icon>
-        </button>
-      </div>
-    </div>
+          <div class="total-section">
+            <h3>Total</h3>
+            <p class="total-price">R$ {{calculateTotal().toFixed(2)}}</p>
+          </div>
 
-    <div class="total-section">
-      <h3>Total</h3>
-      <p class="total-price">R$ {{calculateTotal().toFixed(2)}}</p>
+          <div class="observation-section">
+            <h3>Observações</h3>
+            <mat-form-field appearance="outline" class="observation-field">
+              <textarea matInput
+                        [(ngModel)]="observation"
+                        placeholder="Ex: Remover cebola, sem orégano..."
+                        rows="2"></textarea>
+            </mat-form-field>
+          </div>
+
+          <div class="action-buttons">
+            <button mat-stroked-button (click)="close()">
+              <mat-icon>close</mat-icon>
+              Cancelar
+            </button>
+            <button mat-raised-button color="primary" 
+                    [disabled]="!isSelectionValid()"
+                    (click)="confirm()">
+              <mat-icon>add_shopping_cart</mat-icon>
+              Adicionar Pizza
+            </button>
+            <button mat-raised-button color="accent" 
+                    (click)="finishSelection()">
+              <mat-icon>check</mat-icon>
+              Finalizar
+            </button>
+          </div>
+        </div>
+
+        <div class="added-pizzas-section" *ngIf="addedPizzas.length > 0">
+          <h3>Pizzas no Pedido</h3>
+          <div class="pizza-list">
+            <div *ngFor="let pizza of addedPizzas; let i = index" class="pizza-item">
+              <div class="pizza-info">
+                <div class="pizza-flavors">
+                  <ng-container *ngFor="let flavor of pizza.flavors">
+                    <span class="flavor-name">
+                      <strong>{{flavor.portion === 'whole' ? 'Inteira' : 'Meia'}}:</strong> {{flavor.name}}
+                    </span>
+                  </ng-container>
+                </div>
+                <div *ngIf="pizza.observation" class="pizza-observation">
+                  <mat-icon>note</mat-icon>
+                  <span>{{pizza.observation}}</span>
+                </div>
+              </div>
+              <button mat-icon-button color="warn" (click)="removePizza(i)" class="remove-button">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </mat-dialog-content>
-
-  <mat-dialog-actions align="end">
-    <button mat-button (click)="close()">Cancelar</button>
-    <button mat-raised-button color="primary" 
-            [disabled]="!isSelectionValid()"
-            (click)="confirm()">
-      Adicionar ao Pedido
-    </button>
-  </mat-dialog-actions>
 </div> 

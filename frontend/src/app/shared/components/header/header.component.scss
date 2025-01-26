@@ -1,19 +1,107 @@
+.sidenav-container {
+  background: #fafafa;
+
+  &.mat-drawer-container-has-open {
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+}
+
+.mobile-menu {
+  width: 100%;
+  background: #fff;
+
+  .mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f5f5f5;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+  }
+
+  mat-nav-list {
+    padding-top: 0.5rem;
+
+    .mat-mdc-list-item {
+      height: 48px;
+
+      mat-icon {
+        margin-right: 1rem;
+        color: rgba(0, 0, 0, 0.54);
+      }
+
+      &.active {
+        background: rgba(0, 0, 0, 0.04);
+        
+        mat-icon {
+          color: #1976d2;
+        }
+
+        span {
+          color: #1976d2;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+.mobile-toolbar {
+  span {
+    margin-left: 1rem;
+  }
+}
+
+.desktop-header {
+  height: 64px;
+}
+
+.desktop-toolbar {
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    a.active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
 .spacer {
   flex: 1 1 auto;
 }
 
-nav {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.active {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
 .divider {
-  height: 24px;
-  margin: 0 16px;
-  background-color: rgba(255, 255, 255, 0.3);
+  height: 36px;
+  margin: 0 1rem;
+}
+
+// Animações
+::ng-deep {
+  .mat-drawer-transition .mat-drawer-content {
+    transition: margin 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mat-drawer {
+    transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+// Ajustes para telas menores
+@media (max-width: 600px) {
+  .mobile-toolbar {
+    height: 56px;
+  }
 } 

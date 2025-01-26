@@ -9,8 +9,8 @@
              class="order-card" 
              [class.priority]="first">
           <div class="order-header">
-            <h3>Pedido #{{order.id}}</h3>
-            <span class="order-time">{{order.orderDate | date:'HH:mm'}}</span>
+            <span class="order-id">#{{order.id}}</span>
+            <span class="order-time">{{order.createdAt | date:'HH:mm'}}</span>
           </div>
 
           <div class="pizzas-list">
@@ -58,8 +58,8 @@
         <div *ngFor="let order of completedOrders" 
              class="order-card completed">
           <div class="order-header">
-            <h3>Pedido #{{order.id}}</h3>
-            <span class="order-time">{{order.orderDate | date:'HH:mm'}}</span>
+            <span class="order-id">#{{order.id}}</span>
+            <span class="order-time">{{order.createdAt | date:'HH:mm'}}</span>
           </div>
 
           <div class="pizzas-list">

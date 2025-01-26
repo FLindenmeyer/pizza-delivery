@@ -45,9 +45,7 @@ export class OrderFinishingComponent implements OnInit, OnDestroy {
 
   private filterAndSortOrders(orders: Order[]): void {
     // Separa os pedidos em andamento e concluídos
-    const sortedOrders = orders.sort((a, b) => 
-      new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
-    );
+    const sortedOrders = this.sortOrders(orders);
 
     this.inProgressOrders = sortedOrders.filter(order => 
       order.status === OrderStatus.ASSEMBLY_COMPLETED || 
@@ -60,6 +58,19 @@ export class OrderFinishingComponent implements OnInit, OnDestroy {
 
     console.log('Pedidos em andamento:', this.inProgressOrders);
     console.log('Pedidos concluídos:', this.completedOrders);
+  }
+
+  private sortOrders(orders: Order[]): Order[] {
+    return orders.sort((a, b) => {
+      // Primeiro, ordenar por horário de preparo se existir
+      if (a.preparationTime && b.preparationTime) {
+        return new Date('1970/01/01 ' + a.preparationTime).getTime() - 
+               new Date('1970/01/01 ' + b.preparationTime).getTime();
+      }
+      
+      // Se não houver horário de preparo, ordenar por data de criação
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
   }
 
   isOldestOrder(order: Order): boolean {
@@ -81,9 +92,10 @@ export class OrderFinishingComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(newOrder => {
         console.log('Novo pedido recebido:', newOrder);
-        if (newOrder.status === OrderStatus.ASSEMBLY_COMPLETED) {
+        if (newOrder.status === OrderStatus.ASSEMBLY_COMPLETED || 
+            newOrder.status === OrderStatus.BAKING) {
           this.inProgressOrders = [...this.inProgressOrders, newOrder].sort((a, b) => 
-            new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           );
         }
       });
@@ -107,11 +119,11 @@ export class OrderFinishingComponent implements OnInit, OnDestroy {
     if (updatedOrder.status === OrderStatus.ASSEMBLY_COMPLETED || 
         updatedOrder.status === OrderStatus.BAKING) {
       this.inProgressOrders = [...this.inProgressOrders, updatedOrder].sort((a, b) => 
-        new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
     } else if (updatedOrder.status === OrderStatus.READY) {
       this.completedOrders = [...this.completedOrders, updatedOrder].sort((a, b) => 
-        new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
     }
   }

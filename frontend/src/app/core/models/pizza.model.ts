@@ -4,6 +4,7 @@ export interface Pizza {
   size: number;
   slices: number;
   quantity: number;
+  observation?: string;  // Optional field for customer notes/customizations
 }
 
 export interface PizzaFlavor {

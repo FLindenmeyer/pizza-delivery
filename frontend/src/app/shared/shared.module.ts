@@ -5,12 +5,6 @@ import { MaterialModule } from './material.module';
 import { HeaderComponent } from './components/header/header.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 
-// Material Imports
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
-
 @NgModule({
   declarations: [
     HeaderComponent,
@@ -19,20 +13,13 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [
     CommonModule,
     RouterModule,
-    MaterialModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatDialogModule,
-    MatIconModule
+    MaterialModule
   ],
   exports: [
-    HeaderComponent,
-    ConfirmDialogComponent,
+    CommonModule,
     MaterialModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatDialogModule,
-    MatIconModule
+    HeaderComponent,
+    ConfirmDialogComponent
   ]
 })
 export class SharedModule { } 

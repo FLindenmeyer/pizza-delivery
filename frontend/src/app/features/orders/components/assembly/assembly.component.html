@@ -1,0 +1,58 @@
+<div class="assembly-container">
+  <div class="orders-grid">
+    <mat-card *ngFor="let order of orders; let i = index" 
+              class="order-card"
+              [class.priority]="i === 0"
+              [class.in-preparation]="order.status === 'PREPARATION'">
+      <mat-card-header>
+        <div class="header-content">
+          <span class="order-id">#{{order.id}}</span>
+          <span class="order-time">{{order.createdAt | date:'HH:mm'}}</span>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="customer-info">
+          <div class="info-row">
+            <span class="label">Cliente:</span>
+            <span>{{order.customer}}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Casa:</span>
+            <span>{{order.houseNumber}}</span>
+          </div>
+          <div class="info-row" *ngIf="order.phone">
+            <span class="label">Telefone:</span>
+            <span>{{order.phone}}</span>
+          </div>
+        </div>
+
+        <div class="pizzas-list">
+          <div *ngFor="let item of order.items" class="pizza-item">
+            <div class="pizza-info">
+              <span class="flavors">{{item.name}}</span>
+              <span class="quantity">{{item.quantity}}x</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-stroked-button color="warn" (click)="cancelOrder(order)">
+          <mat-icon>cancel</mat-icon>
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" (click)="startPreparation(order)"
+                *ngIf="order.status === 'PENDING'">
+          <mat-icon>local_pizza</mat-icon>
+          Iniciar Preparo
+        </button>
+        <button mat-raised-button color="accent" (click)="finishPreparation(order)"
+                *ngIf="order.status === 'PREPARATION'">
+          <mat-icon>check_circle</mat-icon>
+          Finalizar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div> 

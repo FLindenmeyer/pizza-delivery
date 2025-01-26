@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'pizza-delivery-secret-key';
-const JWT_EXPIRATION = '1h';
+const JWT_EXPIRATION = '7d';
 
 // Fixed credentials
 const ADMIN_CREDENTIALS = {

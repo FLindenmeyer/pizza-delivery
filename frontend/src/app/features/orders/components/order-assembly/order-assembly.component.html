@@ -7,7 +7,7 @@
          [class.priority]="first">
       <div class="order-header">
         <h3>Pedido #{{order.id}}</h3>
-        <span class="order-time">{{order.orderDate | date:'HH:mm'}}</span>
+        <span class="order-time">{{order.createdAt | date:'HH:mm':'UTC'}}</span>
       </div>
 
       <div class="pizzas-list">
@@ -23,6 +23,11 @@
                 <span class="flavor-name">{{flavor.portion === 'half' ? '1/2 ' : ''}}{{flavor.name}}</span>
               </div>
             </ng-container>
+          </div>
+          
+          <div *ngIf="pizza.observation" class="pizza-observation">
+            <mat-icon>note</mat-icon>
+            <span>{{pizza.observation}}</span>
           </div>
         </div>
       </div>

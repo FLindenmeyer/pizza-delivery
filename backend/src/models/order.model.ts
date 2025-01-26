@@ -7,10 +7,11 @@ export interface Order {
   phone?: string;
   pizzas: Pizza[];
   status: OrderStatus;
-  orderDate: Date;
-  deliveryTime: string;
+  preparationTime?: string;
   isScheduled: boolean;
   totalPrice: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Pizza {
@@ -18,6 +19,7 @@ export interface Pizza {
   size: number;
   slices: number;
   quantity: number;
+  observation?: string;
 }
 
 export interface PizzaFlavor {
@@ -39,7 +41,7 @@ export enum OrderStatus {
 }
 
 export class OrderModel {
-  static async create(order: Omit<Order, 'id'>): Promise<Order> {
+  static async create(order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Promise<Order> {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -51,14 +53,6 @@ export class OrderModel {
       if (!order.houseNumber) throw new Error('Número da casa é obrigatório');
       if (!order.pizzas?.length) throw new Error('Pedido deve ter pelo menos uma pizza');
       
-      // Define horário padrão se não especificado
-      let deliveryTime = order.deliveryTime;
-      if (!deliveryTime || deliveryTime === '') {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() + 45);
-        deliveryTime = now.toTimeString().slice(0, 5);
-      }
-
       // Calcula o total baseado no preço fixo de R$ 70,00 por pizza mais adicionais
       const totalPrice = order.pizzas.reduce((total, pizza) => {
         const additionalPrice = pizza.flavors.reduce((acc, flavor) => acc + (flavor.additionalPrice || 0), 0);
@@ -68,15 +62,18 @@ export class OrderModel {
       const orderResult = await client.query(
         `INSERT INTO orders (
           customer_name, house_number, phone, status,
-          order_date, delivery_time, is_scheduled, total_price
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+          preparation_time, is_scheduled, total_price, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, 
+          CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo',
+          CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo'
+        ) RETURNING *`,
         [
           order.customerName,
           order.houseNumber,
           order.phone || '',
           OrderStatus.PENDING,
-          new Date(),
-          deliveryTime,
+          order.preparationTime || null,
           order.isScheduled || false,
           totalPrice
         ]
@@ -90,14 +87,15 @@ export class OrderModel {
         console.log('Inserindo pizza:', pizza);
         await client.query(
           `INSERT INTO order_pizzas (
-            order_id, flavors, size, slices, quantity
-          ) VALUES ($1, $2, $3, $4, $5)`,
+            order_id, flavors, size, slices, quantity, observation
+          ) VALUES ($1, $2, $3, $4, $5, $6)`,
           [
             newOrder.id,
             JSON.stringify(pizza.flavors),
             pizza.size,
             pizza.slices,
-            pizza.quantity
+            pizza.quantity,
+            pizza.observation || null
           ]
         );
       }
@@ -114,7 +112,8 @@ export class OrderModel {
                 'flavors', op.flavors::json,
                 'size', op.size,
                 'slices', op.slices,
-                'quantity', op.quantity
+                'quantity', op.quantity,
+                'observation', op.observation
               )
             ) FILTER (WHERE op.id IS NOT NULL),
             '[]'::json
@@ -157,40 +156,71 @@ export class OrderModel {
         o.*,
         COALESCE(json_agg(
           json_build_object(
-            'flavors', op.flavors,
+            'flavors', op.flavors::json,
             'size', op.size,
             'slices', op.slices,
-            'quantity', op.quantity
+            'quantity', op.quantity,
+            'observation', op.observation
           )
-        ) FILTER (WHERE op.id IS NOT NULL), '[]') as pizzas
+        ) FILTER (WHERE op.id IS NOT NULL), '[]'::json) as pizzas
       FROM orders o
       LEFT JOIN order_pizzas op ON o.id = op.order_id
       GROUP BY o.id
-      ORDER BY o.order_date DESC
+      ORDER BY o.created_at DESC
     `);
     
     return rows.map(row => this.mapOrderFromDb(row));
   }
 
-  static async findToday(): Promise<Order[]> {
+  static async findByDateRange(startDate: string, endDate: string): Promise<Order[]> {
+    console.log('Buscando pedidos por intervalo de data:', { startDate, endDate });
+    
     const { rows } = await pool.query(`
       SELECT 
         o.*,
         COALESCE(json_agg(
           json_build_object(
-            'flavors', op.flavors,
+            'flavors', op.flavors::json,
             'size', op.size,
             'slices', op.slices,
-            'quantity', op.quantity
+            'quantity', op.quantity,
+            'observation', op.observation
           )
-        ) FILTER (WHERE op.id IS NOT NULL), '[]') as pizzas
+        ) FILTER (WHERE op.id IS NOT NULL), '[]'::json) as pizzas
       FROM orders o
       LEFT JOIN order_pizzas op ON o.id = op.order_id
-      WHERE DATE(o.order_date) = CURRENT_DATE
+      WHERE o.created_at >= $1::timestamp AND o.created_at <= $2::timestamp
       GROUP BY o.id
-      ORDER BY o.delivery_time ASC
+      ORDER BY o.created_at DESC
+    `, [startDate, endDate]);
+    
+    console.log('Pedidos encontrados:', rows.length);
+    return rows.map(row => this.mapOrderFromDb(row));
+  }
+
+  static async findToday(): Promise<Order[]> {
+    console.log('Buscando pedidos do dia...');
+    
+    const { rows } = await pool.query(`
+      SELECT 
+        o.*,
+        COALESCE(json_agg(
+          json_build_object(
+            'flavors', op.flavors::json,
+            'size', op.size,
+            'slices', op.slices,
+            'quantity', op.quantity,
+            'observation', op.observation
+          )
+        ) FILTER (WHERE op.id IS NOT NULL), '[]'::json) as pizzas
+      FROM orders o
+      LEFT JOIN order_pizzas op ON o.id = op.order_id
+      WHERE DATE(o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') = CURRENT_DATE
+      GROUP BY o.id
+      ORDER BY o.created_at ASC
     `);
     
+    console.log('Pedidos encontrados:', rows.length);
     return rows.map(row => this.mapOrderFromDb(row));
   }
 
@@ -267,18 +297,17 @@ export class OrderModel {
       let pizzas: Pizza[] = [];
       
       if (row.pizzas && row.pizzas !== '[]') {
-        // Garantir que temos um array de pizzas
         const pizzasArray = Array.isArray(row.pizzas) ? row.pizzas : JSON.parse(row.pizzas);
         
         pizzas = pizzasArray.map((p: any) => {
-          // Garantir que temos um array de sabores
           const flavors = typeof p.flavors === 'string' ? JSON.parse(p.flavors) : p.flavors;
           
           return {
             flavors: flavors,
             size: p.size,
             slices: p.slices,
-            quantity: p.quantity
+            quantity: p.quantity,
+            observation: p.observation || undefined
           };
         });
       }
@@ -289,11 +318,12 @@ export class OrderModel {
         houseNumber: row.house_number,
         phone: row.phone || '',
         status: row.status,
-        orderDate: row.order_date,
-        deliveryTime: row.delivery_time,
+        preparationTime: row.preparation_time || null,
         isScheduled: row.is_scheduled,
         totalPrice: parseFloat(row.total_price),
-        pizzas: pizzas
+        pizzas: pizzas,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
       };
 
       console.log('Pedido mapeado:', mappedOrder);

@@ -47,7 +47,24 @@ const io = new Server(httpServer, {
     credentials: true
   },
   allowEIO3: true,
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000, // Timeout após 60 segundos sem resposta
+  pingInterval: 25000 // Envia ping a cada 25 segundos
+});
+
+// Middleware para logging e monitoramento
+io.use((socket, next) => {
+  console.log(`Nova conexão WebSocket iniciada: ${socket.id}`);
+  
+  // Adiciona timestamp da conexão
+  socket.data.connectionTime = new Date();
+  
+  // Monitora eventos de erro no socket
+  socket.on('error', (error) => {
+    console.error(`Erro no socket ${socket.id}:`, error);
+  });
+  
+  next();
 });
 
 const port = process.env.PORT || 3000;
@@ -67,29 +84,59 @@ io.on('connection', (socket) => {
     })
     .catch(error => {
       console.error('Erro ao buscar pedidos iniciais:', error);
+      socket.emit('error', { message: 'Erro ao buscar pedidos iniciais' });
     });
 
+  // Heartbeat
+  socket.on('ping', () => {
+    socket.emit('pong');
+  });
+
+  // Monitora a latência
+  let lastPingTime: number;
+  socket.on('ping', () => {
+    lastPingTime = Date.now();
+  });
+  socket.on('pong', () => {
+    const latency = Date.now() - lastPingTime;
+    if (latency > 1000) { // Alerta se latência > 1s
+      console.warn(`Alta latência detectada no socket ${socket.id}: ${latency}ms`);
+    }
+  });
+
   socket.on('orderUpdated', (order) => {
-    console.log('Pedido atualizado recebido:', order);
-    io.emit('orderUpdated', order);
+    try {
+      console.log('Pedido atualizado recebido:', order);
+      io.emit('orderUpdated', order);
+    } catch (error) {
+      console.error('Erro ao processar atualização de pedido:', error);
+      socket.emit('error', { message: 'Erro ao processar atualização de pedido' });
+    }
   });
 
   socket.on('orderCreated', (order) => {
-    console.log('Novo pedido recebido:', order);
-    io.emit('orderCreated', order);
+    try {
+      console.log('Novo pedido recebido:', order);
+      io.emit('orderCreated', order);
+    } catch (error) {
+      console.error('Erro ao processar novo pedido:', error);
+      socket.emit('error', { message: 'Erro ao processar novo pedido' });
+    }
   });
 
   socket.on('orderDeleted', (orderId) => {
-    console.log('Pedido deletado:', orderId);
-    io.emit('orderDeleted', orderId);
+    try {
+      console.log('Pedido deletado:', orderId);
+      io.emit('orderDeleted', orderId);
+    } catch (error) {
+      console.error('Erro ao processar exclusão de pedido:', error);
+      socket.emit('error', { message: 'Erro ao processar exclusão de pedido' });
+    }
   });
 
-  socket.on('disconnect', () => {
-    console.log('Cliente desconectado:', socket.id);
-  });
-
-  socket.on('error', (error) => {
-    console.error('Erro no WebSocket:', error);
+  socket.on('disconnect', (reason) => {
+    const connectionDuration = new Date().getTime() - socket.data.connectionTime.getTime();
+    console.log(`Cliente desconectado: ${socket.id}, Razão: ${reason}, Duração da conexão: ${connectionDuration}ms`);
   });
 });
 

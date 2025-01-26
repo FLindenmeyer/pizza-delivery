@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'pizza-delivery-secret-key';
+
 export interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -18,7 +20,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
   const [, token] = authHeader.split(' ');
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret-key') as {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
       id: string;
       email: string;
     };

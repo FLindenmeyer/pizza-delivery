@@ -43,13 +43,12 @@ export class OrderAssemblyComponent implements OnInit, OnDestroy {
 
   private filterAndSortOrders(orders: Order[]): void {
     // Filtra apenas pedidos pendentes ou em montagem
-    this.orders = orders.filter(order => 
-      order.status === OrderStatus.PENDING || 
-      order.status === OrderStatus.ASSEMBLY
-    ).sort((a, b) => {
-      // Ordena por data de criação (mais antigo primeiro)
-      return new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime();
-    });
+    this.orders = this.sortOrders(
+      orders.filter(order => 
+        order.status === OrderStatus.PENDING || 
+        order.status === OrderStatus.ASSEMBLY
+      )
+    );
   }
 
   isOldestOrder(order: Order): boolean {
@@ -101,9 +100,7 @@ export class OrderAssemblyComponent implements OnInit, OnDestroy {
         this.orders = this.orders.filter(o => o.id !== updatedOrder.id);
       } else {
         this.orders[index] = updatedOrder;
-        this.orders = [...this.orders].sort((a, b) => 
-          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
-        );
+        this.orders = this.sortOrders([...this.orders]);
       }
     } else if (updatedOrder.status === OrderStatus.PENDING) {
       this.handleNewOrder(updatedOrder);
@@ -113,9 +110,7 @@ export class OrderAssemblyComponent implements OnInit, OnDestroy {
   private handleNewOrder(newOrder: Order): void {
     if (newOrder.status === OrderStatus.PENDING) {
       console.log('Adicionando novo pedido pendente à lista:', newOrder);
-      this.orders = [...this.orders, newOrder].sort((a, b) => 
-        new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
-      );
+      this.orders = this.sortOrders([...this.orders, newOrder]);
     }
   }
 
@@ -131,18 +126,7 @@ export class OrderAssemblyComponent implements OnInit, OnDestroy {
         this.websocketService.emitOrderStatusUpdate(updatedOrder);
         
         // Atualiza o estado local
-        const index = this.orders.findIndex(o => o.id === updatedOrder.id);
-        if (index !== -1) {
-          if (updatedOrder.status !== OrderStatus.PENDING && 
-              updatedOrder.status !== OrderStatus.ASSEMBLY) {
-            this.orders = this.orders.filter(o => o.id !== updatedOrder.id);
-          } else {
-            this.orders[index] = updatedOrder;
-            this.orders = [...this.orders].sort((a, b) => 
-              new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
-            );
-          }
-        }
+        this.handleOrderUpdate(updatedOrder);
         
         this.snackBar.open('Status atualizado com sucesso!', 'OK', { duration: 3000 });
       },
@@ -150,6 +134,19 @@ export class OrderAssemblyComponent implements OnInit, OnDestroy {
         console.error('Erro ao atualizar status:', error);
         this.snackBar.open('Erro ao atualizar status. Por favor, tente novamente.', 'OK', { duration: 3000 });
       }
+    });
+  }
+
+  private sortOrders(orders: Order[]): Order[] {
+    return orders.sort((a, b) => {
+      // Primeiro, ordenar por horário de preparo se existir
+      if (a.preparationTime && b.preparationTime) {
+        return new Date('1970/01/01 ' + a.preparationTime).getTime() - 
+               new Date('1970/01/01 ' + b.preparationTime).getTime();
+      }
+      
+      // Se não houver horário de preparo, ordenar por data de criação
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     });
   }
 } 
